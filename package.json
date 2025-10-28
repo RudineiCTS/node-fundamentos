@@ -1,0 +1,22 @@
+{
+  "name": "fundamentos",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node server.js",
+    "dev": "ts-node server.ts"
+  },
+  "dependencies": {
+    "csv-parse": "^6.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
