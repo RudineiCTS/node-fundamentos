@@ -1,5 +1,8 @@
 import http from 'node:http';
-
+import assert from "node:assert";
+import fs from 'fs';
+import {parse} from 'csv-parse';
+import { createObjectCsvWriter } from 'csv-writer';
 
 const server = http.createServer((req, res) => {
     const { method, url } = req;
@@ -11,15 +14,19 @@ const server = http.createServer((req, res) => {
         completed_at: string | null;
         update_at: string;
         created_at: string;
-      } = {
-        id: '',
-        title: '',
-        description: '',
-        completed_at: null,
-        update_at: '',
-        created_at: ''
-      };
-
+      } = null;
+    
+    const csvWriter = createObjectCsvWriter({
+        path:'teste.csv',   
+        header:[
+            { id: 'id', title: 'id' },
+            { id: 'title', title: 'title' },
+            { id: 'description', title: 'description' },
+            { id: 'created_at', title: 'created_at' },
+            { id: 'updated_at', title: 'updated_at' }
+        ],
+        append: true
+    })
     res.setHeader('Content-Type', 'application/json');
 
     if (method === 'POST' && url === '/') {
@@ -28,26 +35,32 @@ const server = http.createServer((req, res) => {
             body += chunk.toString();
            
         }) 
+        req.on('end', async()=>{
+            try{
+                const data = JSON.parse(body);
 
-      
+                const novaTarefa = {
+                    id:`id-${idUnique}`,
+                    title:data.title,
+                    description: data.description,
+                    create_at: new Date().toISOString(),
+                    update_at: new Date().toISOString()
+                };
 
-        
-        // novaTarefa.title = body.title;
-        // novaTarefa.description = body.description;
-        novaTarefa.created_at = new Date().toISOString();
-        novaTarefa.update_at = new Date().toISOString();
-        novaTarefa.id = `id-${idUnique}`; 
-        res.end(JSON.stringify({body}));
-        
-        req.on('end', () => {
-            console.log(body);
+                await csvWriter.writeRecords([novaTarefa])
+                res.writeHead(200, {'content-Type':'application/json'});
+                res.end(JSON.stringify(novaTarefa));
+
+            }catch(error){
+                res.writeHead(400, {'content-Type':'application/json'});
+                res.end(JSON.stringify({error:'json invalido'}));
+            }
         })
     }
-    idUnique++;
-
-    
 });
 
 server.listen(3000, () => {
     console.log('Server is listening on port 3000');
 });
+
+
